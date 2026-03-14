@@ -116,8 +116,6 @@ export default function MapWithBox({ center }) {
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY;
   const mapId = process.env.NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID;
 
-  const seenDests = new Set();
-
   useEffect(() => {
     if (!navigator.geolocation) return;
 
@@ -152,8 +150,6 @@ export default function MapWithBox({ center }) {
       // Add the new location to the array
       return [...prev, location];
     });
-
-    console.log("searchhistory", destHistory);
   };
 
 
@@ -174,6 +170,12 @@ export default function MapWithBox({ center }) {
 
   const handleMapType = () => {
     setMapType(mapType => !mapType);
+  }
+
+  // used in any ui to delete history
+  const handleDestDelete =(placeId) => {
+    console.log("del happens");
+    setDestHistory((prev) => prev.filter(dest => dest.placeId !== placeId));
   }
 
   return (
@@ -254,6 +256,7 @@ export default function MapWithBox({ center }) {
               apiKey={apiKey}
               home={home}
               destinations={destHistory}
+              destDelete={handleDestDelete}
             />
           </div>
         }
