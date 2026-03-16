@@ -1,7 +1,6 @@
-import { createDataLookup, prepRowData } from '../utils/places';
-import { RoutesMatrixAPI } from '../routes-matrix-api';
-import { PlacesApi } from '../place-api';
 import { useState, useEffect } from 'react';
+import { createDataLookup, prepRowData } from '../utils/places';
+import { routesMatrixApi, placesApi } from '../config/maps';
 
 // TODO: Optimize destination fetching to avoid redundant API calls
 
@@ -20,7 +19,7 @@ import { useState, useEffect } from 'react';
 
 // Not a priority until destination lists exceed ~50 items.
 
-export function useDestinations(apiKey, home, destinations){
+export function useDestinations(home, destinations){
   
   const [rows, setRows] = useState([]);
 
@@ -32,14 +31,11 @@ export function useDestinations(apiKey, home, destinations){
           return;
         }
 
-        const routesApi = new RoutesMatrixAPI(apiKey);
-        const placesApi = new PlacesApi(apiKey);
-  
         // 1. Fire all "batch" requests at once
         const [driveRes, walkRes, transitRes, placesRes] = await Promise.all([
-          routesApi.computeMatrix(home, destinations, "DRIVE"),
-          routesApi.computeMatrix(home, destinations, "WALK"),
-          routesApi.computeMatrix(home, destinations, "TRANSIT"),
+          routesMatrixApi.computeMatrix(home, destinations, "DRIVE"),
+          routesMatrixApi.computeMatrix(home, destinations, "WALK"),
+          routesMatrixApi.computeMatrix(home, destinations, "TRANSIT"),
           Promise.all(destinations.map(dest => placesApi.getPlaceDetails(dest.placeId)))
         ]);
 
@@ -66,7 +62,7 @@ export function useDestinations(apiKey, home, destinations){
     };
   
     loadTableData();
-  }, [apiKey, home, destinations]); // refresh when inputs change
+  }, [home, destinations]); // refresh when inputs change
 
   return {rows};
 }

@@ -1,5 +1,10 @@
 import MapWithBox from "../components/MapWithBox";
+import { MapFeatureProvider } from "../context/MapContext";
 
 export default function Home() {
-  return <MapWithBox />;
+  return (
+    <MapFeatureProvider>
+      <MapWithBox />
+    </MapFeatureProvider>
+  );
 }

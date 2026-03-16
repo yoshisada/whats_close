@@ -19,6 +19,8 @@ import './DestInfoTable.css';
 import { useDestinations } from '../hooks/useDestinations';
 import { formatDurationFromSeconds } from '../utils/time';
 import { getImperialDist } from '../utils/distance';
+import { useMapFeatures } from "../context/MapContext";
+import RouteIcon from '@mui/icons-material/Route';
 
 
 // TODO: add open hours column
@@ -71,12 +73,13 @@ const stickyLeftOffsets = (() => {
 
 const tableMinWidth = columns.reduce((sum, column) => sum + (column.minWidth ?? 0), 0);
 
-export default function StickyHeadTable({apiKey, home, destinations, destDelete}) {
+export default function StickyHeadTable() {
+  const {home, destHistory:destinations, deleteFromHistory:destDelete, setDestination} = useMapFeatures();
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
-  // get the data with custom hook 
-  const { rows } = useDestinations(apiKey, home, destinations);
+  // fetch the data with custom hook 
+  const { rows } = useDestinations(home, destinations);
 
   const maxPage = Math.max(0, Math.ceil(rows.length / rowsPerPage) - 1);
   const pageClamped = Math.min(page, maxPage);
@@ -147,6 +150,13 @@ export default function StickyHeadTable({apiKey, home, destinations, destDelete}
                           {column.id === 'name' ? (
                             <Box className="destInfoTableNameCell">
                               <Box className="destInfoTableNameText">{value}</Box>
+                              <IconButton
+                                size="small"
+                                aria-label={`show route ${row.desPlaceId}`}
+                                onClick={() => setDestination(row.destObj)}
+                              >
+                                <RouteIcon fontSize="small"/>
+                              </IconButton>
                               <IconButton
                                 size="small"
                                 aria-label={`delete ${row.desPlaceId}`}

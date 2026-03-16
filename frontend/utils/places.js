@@ -33,6 +33,7 @@ export function prepRowData(dest, driveData, walkData, transitData, placeInfo){
   return {
     name:        dest.name,
     desPlaceId:  dest.placeId,
+    destObj:     dest,
     distance:    driveData.distanceMeters,
     driveTime:   cleanTimeRes(driveData),
     walkTime:    cleanTimeRes(walkData),

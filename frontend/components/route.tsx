@@ -1,16 +1,20 @@
 "use client";
 
 import React, {useEffect, useState} from 'react';
+
 import {
   AdvancedMarker,
   useMap
 } from '@vis.gl/react-google-maps';
 
-import {Polyline} from './polyline';
-import {RoutesApi} from '../routes-api';
+import { Polyline } from './polyline';
+import { routesApiClient } from '../config/maps';
 import './route.css';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import SportsScoreIcon from '@mui/icons-material/SportsScore';
+import { useMapFeatures } from '../context/MapContext';
+import { formatDurationFromSeconds } from '../utils/time';
+import { getMetricDist, getImperialDist } from '../utils/distance';
 
 const defaultAppearance = {
   walkingPolylineColor: '#1E90FF',  // Dodger Blue for walking
@@ -21,61 +25,25 @@ const defaultAppearance = {
 
 type Appearance = typeof defaultAppearance;
 
-function formatDurationFromSeconds(totalSeconds: number): string {
-  if (!Number.isFinite(totalSeconds) || totalSeconds < 0) return '';
-  const secondsInDay  = 86400
-  const secondsInHour = 3600
-  const secondsInMin  = 60
-
-  let time:string = ""
-  if (totalSeconds >= secondsInDay){
-    const days = Math.floor(totalSeconds / secondsInDay);
-    totalSeconds %= secondsInDay
-    time += `${days}d `;
-  }
-
-  if(totalSeconds >= secondsInHour){
-    const hours = Math.floor(totalSeconds / secondsInHour);
-    totalSeconds %= secondsInHour
-    time += `${hours}h `
-  }
-
-  if(totalSeconds >= secondsInMin){
-    const remSec = totalSeconds % secondsInMin
-    let round = remSec >= 45 ? 1 : 0;
-    const mins = Math.floor(totalSeconds / secondsInMin) + round;
-    time += `${mins}min `
-  }
-
-  return time.trim();
-}
-
-function getImperialDist(meters: number): string{
-  const miles = (meters * 0.000621371).toFixed(1);
-  return `${miles}mi`;
-}
-
-function getMetricDist(meters: number): string{
-  const km = (meters / 1000).toFixed(1);
-  return `${km}km`;
-}
-
-
+// origin: {lat: number; lng: number};
+// destination: {lat: number; lng: number};
+// showInfoPill?: boolean;
 export type RouteProps = {
-  apiClient: RoutesApi;
-  origin: {lat: number; lng: number};
-  destination: {lat: number; lng: number};
   routeOptions?: any;
   appearance?: Partial<Appearance>;
-  showInfoPill?: boolean;
   onRouteBoundsChange?: (bounds: google.maps.LatLngBoundsLiteral) => void;
 };
 
 const Route = (props: RouteProps) => {
-  const {apiClient, origin, destination, routeOptions, showInfoPill, onRouteBoundsChange} = props;
 
+  const {home:origin, destination, isStreetViewVisible, setRouteBounds:onRouteBoundsChange} = useMapFeatures();
+  const {routeOptions} = props;
+  
   const [route, setRoute] = useState<any>(null);
   const [travelTime, setTravelTime] = useState<string>('');
+
+  const showInfoPill = !isStreetViewVisible
+
   // 1. ADD STATE FOR DISTANCE
   const [metricDist, setMetricDist] = useState<string>('')
   const [imperialDist, setImperialDist] = useState<string>('')
@@ -87,12 +55,12 @@ const Route = (props: RouteProps) => {
   const map = useMap();
   
   useEffect(() => {
-    if (!map) return;
-
-    console.log(origin);
-    console.log(destination);
-
-    apiClient.computeRoutes(origin, destination, routeOptions).then(res => {
+    if (!map){
+      console.warn("StreetViewWatcher: 'map' instance not found. Ensure this component is inside <GoogleMap>.");
+      return;
+    }
+    
+    routesApiClient.computeRoutes(origin, destination, routeOptions).then(res => {
       const [route] = res.routes;
       setRoute(route);
 
@@ -107,7 +75,7 @@ const Route = (props: RouteProps) => {
       map.fitBounds(bounds);
       onRouteBoundsChange?.(bounds);
     });
-  }, [origin, destination, routeOptions, map, apiClient, onRouteBoundsChange]);
+  }, [origin, destination, routeOptions, map, onRouteBoundsChange]);
 
   // 2. UPDATED USEEFFECT TO PARSE DURATION AND DISTANCE
   useEffect(() => {
