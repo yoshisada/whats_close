@@ -1,9 +1,10 @@
 "use client";
 
+// look into reducesrs https://react.dev/learn/scaling-up-with-reducer-and-context
 import React, { createContext, useContext, useState, useCallback } from 'react';
 import { MAP_CONFIG } from '../config/maps';
 
-const MapContext = createContext();
+const MapContext = createContext(null);
 
 export function MapFeatureProvider({ children }) {
   // --- Data State ---
