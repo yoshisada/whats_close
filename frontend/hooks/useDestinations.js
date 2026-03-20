@@ -2,83 +2,119 @@ import { useState, useEffect, useRef } from 'react';
 import { createDataLookup, prepRowData } from '../utils/places';
 import { routesMatrixApi, placesApi } from '../config/maps';
 
-// Helper function extracted to keep the useEffect clean
-async function fetchDestinationsData(homeOrigin, destsArray) {
-  const [driveRes, walkRes, transitRes, placesRes] = await Promise.all([
-    //computeMatrix can take multiple dests as an arg
-    routesMatrixApi.computeMatrix(homeOrigin, destsArray, "DRIVE"),
-    routesMatrixApi.computeMatrix(homeOrigin, destsArray, "WALK"),
-    routesMatrixApi.computeMatrix(homeOrigin, destsArray, "TRANSIT"),
-    //getDetails has to take each dest one by one
-    Promise.all(destsArray.map(dest => placesApi.getPlaceDetails(dest.placeId)))
-  ]);
-  const driveResLookUp   = createDataLookup(driveRes);
-  const walkResLookUp    = createDataLookup(walkRes);
-  const transitResLookUp = createDataLookup(transitRes);
-  return destsArray.map((dest, index) => {
-    return prepRowData(dest, driveResLookUp[index], walkResLookUp[index], transitResLookUp[index], placesRes[index]);
+// TODO: 3/20 think about a simple cache garabage collection strategy
+
+// Helper 1: Fetches only missing place details and mutates the cache object
+async function fetchMissingPlaces(missingDests, cacheRef) {
+  if (missingDests.length === 0) return;
+  
+  const results = await Promise.all(
+    missingDests.map(dest => placesApi.getPlaceDetails(dest.placeId))
+  );
+  
+  // Write the results ot the cache
+  results.forEach((res, i) => {
+    cacheRef.current.places[missingDests[i].placeId] = res;
   });
+
+  console.log("Fetched PLACES", missingDests);
 }
+
+// Helper 2: Fetches only missing routes for the current home and mutates the cache object
+async function fetchMissingRoutes(home, missingDests, cacheRef) {
+  if (missingDests.length === 0) return;
+  
+  const [driveRes, walkRes, transitRes] = await Promise.all([
+    routesMatrixApi.computeMatrix(home, missingDests, "DRIVE"),
+    routesMatrixApi.computeMatrix(home, missingDests, "WALK"),
+    routesMatrixApi.computeMatrix(home, missingDests, "TRANSIT")
+  ]);
+
+  const driveLookUp = createDataLookup(driveRes);
+  const walkLookUp = createDataLookup(walkRes);
+  const transitLookUp = createDataLookup(transitRes);
+  const homeId = home.placeId;
+
+  // Write the results ot the cache
+  missingDests.forEach((dest, index) => {
+    cacheRef.current.routes[`${homeId}_${dest.placeId}`] = {
+      drive: driveLookUp[index],
+      walk: walkLookUp[index],
+      transit: transitLookUp[index]
+    };
+  });
+
+  console.log("Fetched ROUTES", missingDests)
+}
+
+// TODO: cache garbaage collection
+// function cleanCache(cacheRef) {
+//   const routeKeys = Object.keys(cacheRef.current.routes);
+//   if (routeKeys.length > MAX_CACHE_SIZE) {
+//     // Remove the oldest 20 entries to make room
+//     routeKeys.slice(0, 20).forEach(key => {
+//       delete cacheRef.current.routes[key];
+//     });
+//   }
+// }
 
 export function useDestinations(home, destinations) {
   const [rows, setRows] = useState([]);
 
-  // Initialized to null so the first run always sees a change and does a full fetch
-  const prevHome = useRef(null);
-  const prevDests = useRef(null);
+  // The Cache: Persists for the lifetime of the component
+  const cache = useRef({
+    places: {}, // { "placeId": placeData }
+    routes: {}  // { "homeId_destId": { drive, walk, transit } }
+  });
 
   useEffect(() => {
-    let isMounted = true; // Prevents stale state updates if component unmounts during fetch
+    let isMounted = true;
 
     const loadTableData = async () => {
       try {
-        // Handle empty states immediately
         if (!home || destinations.length === 0) {
           if (isMounted) setRows([]);
-          prevHome.current = home;
-          prevDests.current = destinations;
           return;
         }
 
-        const homeChanged = prevHome.current?.placeId !== home?.placeId;
-        const currentIds = destinations.map(d => d.placeId);
-        const prevIds = (prevDests.current || []).map(d => d.placeId);
+        const currentHomeId = home.placeId;
 
-        // SCENARIO 1: Home changed (or initial load) -> Refetch ALL
-        if (homeChanged || prevIds.length === 0) {
-          const newRows = await fetchDestinationsData(home, destinations);
-          console.log("HOME CHANGED REFETCH ALL", newRows);
-          if (isMounted) setRows(newRows);
+        // 1. Identify what data is currently missing from our caches
+        
+        // places cache 
+        const missingPlaces = destinations.filter(
+          d => !cache.current.places[d.placeId]
+        );
+        
+        // routes cache
+        const missingRoutes = destinations.filter(
+          d => !cache.current.routes[`${currentHomeId}_${d.placeId}`]
+        );
+
+        // 2. Fetch only the missing pieces concurrently
+        await Promise.all([
+          fetchMissingPlaces(missingPlaces, cache),
+          fetchMissingRoutes(home, missingRoutes, cache)
+        ]);
+
+        // 3. Assemble the rows entirely from the local cache
+        if (isMounted) {
+          const newRows = destinations.map(dest => {
+            // read the cahce here 
+            const placeData = cache.current.places[dest.placeId];
+            const routeData = cache.current.routes[`${currentHomeId}_${dest.placeId}`];
+
+            return prepRowData(
+              dest,
+              routeData.drive,
+              routeData.walk,
+              routeData.transit,
+              placeData
+            );
+          });
+
+          setRows(newRows);
         }
-        // SCENARIO 2 & 3: Home is the same, diff the destinations
-        else {
-          const addedDests = destinations.filter(d => !prevIds.includes(d.placeId));
-          const removedIds = prevIds.filter(id => !currentIds.includes(id));
-
-          // SCENARIO 3: Only deletions -> No fetch, just filter local state
-          if (removedIds.length > 0 && addedDests.length === 0) {
-            if (isMounted) {
-              console.log("NO FETCH DELETE ONLY")
-              setRows(prevRows => prevRows.filter(row => !removedIds.includes(row.desPlaceId)));
-            }
-          }
-          // SCENARIO 2: Additions -> Fetch ONLY new, append to local state
-          else if (addedDests.length > 0) {
-            const newRowsData = await fetchDestinationsData(home, addedDests);
-            console.log("SAME HOME NEW DEST", newRowsData);
-            if (isMounted) {
-              setRows(prevRows => {
-                // Filter out any deleted ones just in case both happened, then append new
-                const filteredRows = prevRows.filter(row => !removedIds.includes(row.desPlaceId));
-                return [...filteredRows, ...newRowsData];
-              });
-            }
-          }
-        }
-
-        // Sync the refs with the current state for the next render cycle
-        prevHome.current = home;
-        prevDests.current = destinations;
       } catch (err) {
         console.error("Destination initialization failed:", err);
       }
@@ -86,11 +122,10 @@ export function useDestinations(home, destinations) {
 
     loadTableData();
 
-    // Cleanup function — isMounted prevents stale setRows calls from resolved fetches
     return () => {
       isMounted = false;
     };
-  }, [home, destinations]);
+  }, [home, destinations]); // The effect now runs anytime home or dests change, but only fetches if cache is empty
 
   return { rows };
 }
