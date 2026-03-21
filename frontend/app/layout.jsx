@@ -17,3 +17,11 @@ export default function RootLayout({ children }) {
     </html>
   );
 }
+
+// trying to prevent zooms on mobile especially
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,    // Prevents the browser from zooming in on focus
+  userScalable: false, // Prevents users from accidentally pinching the UI
+};

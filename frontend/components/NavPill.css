@@ -99,7 +99,8 @@
 .np-mobile-overlay__input {
   border: none;
   outline: none;
-  font-size: 14px;
+  /* MUST be 16px to stop Chrome/Safari auto-zoom */
+  font-size: 16px;
   font-weight: 500;
   color: var(--np-color-text-primary);
   background: transparent;
