@@ -1,3 +1,4 @@
+/* global.css */
 * {
   box-sizing: border-box;
 }
@@ -6,4 +7,17 @@ html,
 body {
   margin: 0;
   padding: 0;
+  /* Use dynamic viewport height to account for mobile toolbars */
+  height: 100dvh; 
+  width: 100%;
+  /* Prevents the "rubber-band" scrolling effect on mobile */
+  overflow: hidden; 
+  overscroll-behavior: none;
+}
+
+/* Fallback for older browsers */
+@supports not (height: 100dvh) {
+  html, body {
+    height: 100vh;
+  }
 }
