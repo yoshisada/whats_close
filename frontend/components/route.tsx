@@ -15,6 +15,7 @@ import SportsScoreIcon from '@mui/icons-material/SportsScore';
 import { useMapFeatures } from '../context/MapContext';
 import { formatDurationFromSeconds } from '../utils/time';
 import { getMetricDist, getImperialDist } from '../utils/distance';
+import { MAP_CONFIG } from '../config/maps';
 
 const defaultAppearance = {
   walkingPolylineColor: '#1E90FF',  // Dodger Blue for walking
@@ -72,7 +73,7 @@ const Route = (props: RouteProps) => {
         west: low.longitude
       };
 
-      map.fitBounds(bounds);
+      map.fitBounds(bounds, MAP_CONFIG.routePadding);
       onRouteBoundsChange?.(bounds);
     });
   }, [origin, destination, routeOptions, map, onRouteBoundsChange]);

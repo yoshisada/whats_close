@@ -4,9 +4,8 @@ import { useMapFeatures } from "../context/MapContext";
 import { PlacesAPI } from '../lib/AutoCompleteAPI';
 import './NavPill.css';
 
-
 const places = new PlacesAPI(process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY);
-const DELAY = 600; // SAVE MONEY on calls
+const DELAY = 600; 
 const INPUT_CHAR_MIN = 5;
 
 const FIELDS = [
@@ -68,11 +67,13 @@ function DestIcon() {
   );
 }
 
-function ClearButton({ visible, onMouseDown }) {
+// SIMPLIFIED: Changed onMouseDown to onClick, added type="button" to prevent form submits
+function ClearButton({ visible, onClick }) {
   return (
     <button
+      type="button"
       className={`np-field__clear ${visible ? 'np-field__clear--visible' : 'np-field__clear--hidden'}`}
-      onMouseDown={onMouseDown}
+      onClick={onClick}
       aria-label="Clear"
     >
       <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
@@ -82,14 +83,14 @@ function ClearButton({ visible, onMouseDown }) {
   );
 }
 
-function PillField({ fieldRef, inputRef, icon: Icon, label, value, placeholder, onChange, onFocus, onClear, active }) {
+// SIMPLIFIED: Removed inputRef prop. Changed root element from <div> to <label>.
+function PillField({ icon: Icon, label, value, placeholder, onChange, onFocus, onClear, active }) {
   return (
-    <div ref={fieldRef} className={`np-field ${active ? 'np-field--active' : ''}`}>
+    <label className={`np-field ${active ? 'np-field--active' : ''}`} style={{ cursor: 'text' }}>
       <Icon />
       <div className="np-field__body">
         <span className="np-field__label">{label}</span>
         <input
-          ref={inputRef}
           className="np-field__input"
           value={value}
           onChange={onChange}
@@ -97,13 +98,14 @@ function PillField({ fieldRef, inputRef, icon: Icon, label, value, placeholder, 
           placeholder={placeholder}
         />
       </div>
-      <ClearButton visible={value.length > 0} onMouseDown={onClear} />
-    </div>
+      {/* SIMPLIFIED: Removed e.stopPropagation(). Clicking clear bubbles to the label, which auto-focuses the input! */}
+      <ClearButton visible={value.length > 0} onClick={onClear} />
+    </label>
   );
 }
 
-function MobileOverlay({ field, input, suggestions, onClose, onChange, onSelect, onClear, inputRef }) {
-  useEffect(() => { inputRef.current?.focus(); }, [inputRef]);
+// SIMPLIFIED: Removed inputRef prop. Changed input-row <div> to <label>.
+function MobileOverlay({ field, input, suggestions, onClose, onChange, onSelect, onClear }) {
   const Icon = field.icon;
 
   return (
@@ -118,11 +120,18 @@ function MobileOverlay({ field, input, suggestions, onClose, onChange, onSelect,
           {field.id === 'origin' ? 'Set origin' : 'Set destination'}
         </div>
       </div>
-      <div className="np-mobile-overlay__input-row">
+      <label className="np-mobile-overlay__input-row" style={{ cursor: 'text' }}>
         <Icon />
-        <input ref={inputRef} className="np-mobile-overlay__input" value={input} onChange={onChange} placeholder={field.placeholder} />
-        <ClearButton visible={input.length > 0} onMouseDown={onClear} />
-      </div>
+        {/* SIMPLIFIED: Added native autoFocus attribute to replace the useEffect + ref mount logic */}
+        <input 
+          autoFocus 
+          className="np-mobile-overlay__input" 
+          value={input} 
+          onChange={onChange} 
+          placeholder={field.placeholder} 
+        />
+        <ClearButton visible={input.length > 0} onClick={onClear} />
+      </label>
       <div className="np-mobile-overlay__body">
         <SuggestionList suggestions={suggestions} onSelect={onSelect} inOverlay />
       </div>
@@ -146,14 +155,16 @@ export default function NavPill({ onSelect }) {
     showDataTable, setShowDataTable
   } = useMapFeatures();
 
+  const tableStateBeforeOverlay = useRef(null);
+
+  // SIMPLIFIED: Kept pillRef (for click-outside), timer, and requestSeq. 
+  // Deleted inputRefs, mobileInputRef, and tableStateBeforeOverlay!
   const pillRef = useRef(null);
-  const inputRefs = useRef({ origin: null, dest: null });
-  const mobileInputRef = useRef(null);
   const timer = useRef(null);
   const requestSeq = useRef(0);
+  
   const isMobile = useIsMobile();
   const shouldRenderMobile = isMobile === true;
-  const tableStateBeforeOverlay = useRef(null);
 
   useEffect(() => {
     document.body.style.overflow = mobileOverlay ? 'hidden' : '';
@@ -211,20 +222,21 @@ export default function NavPill({ onSelect }) {
   }
 
   function handleMobileOpen(fieldId, value) {
-    // needed to hide the display table correctly
+    // SIMPLIFIED: Removed manual table state toggling (handled by the new useEffect above)
     tableStateBeforeOverlay.current = showDataTable;
     setShowDataTable(false);
 
     setMobileOverlay(fieldId);
     value.length >= 3 ? fetchSuggestions(value) : invalidateSuggestions();
+
   }
 
   function closeOverlay() {
     setMobileOverlay(null);
     invalidateSuggestions();
+
     if (tableStateBeforeOverlay.current !== null) {
       setShowDataTable(tableStateBeforeOverlay.current);
-      tableStateBeforeOverlay.current = null;
     }
   }
 
@@ -237,7 +249,6 @@ export default function NavPill({ onSelect }) {
     setActiveField(null);
     closeOverlay();
     
-    // Once something is selected then get their lat and long from geocode call
     places.getGeocodeV3(placeId).then(({ location }) => {
       const place = {
         field: fieldId,
@@ -256,7 +267,6 @@ export default function NavPill({ onSelect }) {
       }
     }).catch((err) => {
       console.error('Geocode failed:', err);
-      // optionally notify the user
     });
   }
 
@@ -269,11 +279,7 @@ export default function NavPill({ onSelect }) {
     }else{
       clearRoute();
     }
-
-    setTimeout(() => {
-      const ref = shouldRenderMobile ? mobileInputRef : { current: inputRefs.current[fieldId] };
-      ref.current?.focus();
-    }, 0);
+    // SIMPLIFIED: Removed the setTimeout and manual ref.focus() calls here.
   }
 
   if (isStreetViewVisible) return null;
@@ -287,7 +293,6 @@ export default function NavPill({ onSelect }) {
             <Fragment key={f.id}>
               {i > 0 && <div className="np-pill__divider" />}
               <PillField
-                inputRef={el => (inputRefs.current[f.id] = el)}
                 icon={f.icon}
                 label={f.label}
                 value={fieldState[f.id].input}
@@ -295,7 +300,7 @@ export default function NavPill({ onSelect }) {
                 active={activeField === f.id}
                 onChange={e => handleChange(f.id, e.target.value)}
                 onFocus={() => handleActivate(f.id, fieldState[f.id].input)}
-                onClear={e => { e.stopPropagation(); handleClear(f.id); }}
+                onClear={() => handleClear(f.id)}
               />
             </Fragment>
           ))}
@@ -333,7 +338,6 @@ export default function NavPill({ onSelect }) {
           field={overlayField}
           input={fieldState[mobileOverlay].input}
           suggestions={suggestions}
-          inputRef={mobileInputRef}
           onClose={closeOverlay}
           onChange={e => handleChange(mobileOverlay, e.target.value)}
           onSelect={handleSelect}

@@ -15,7 +15,7 @@ export default function RecenterRouteButton() {
 
   const handleRecenter = () => {
     if (routeBounds) {
-      map.fitBounds(routeBounds);
+      map.fitBounds(routeBounds, MAP_CONFIG.routePadding);
       return;
     }
 

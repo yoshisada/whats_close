@@ -77,7 +77,7 @@ export default function MapWithBox() {
           mapTypeControl={false}
           fullscreenControl
         >
-          {destHistory.length > 0 &&
+          {!showDataTable && destHistory.length > 0 &&
             <ShowDataTableButton />
           } 
           <MapCenterControl />

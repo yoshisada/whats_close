@@ -20,6 +20,7 @@ import { formatDurationFromSeconds } from '../utils/time';
 import { getImperialDist } from '../utils/distance';
 import { useMapFeatures } from "../context/MapContext";
 import RouteIcon from '@mui/icons-material/Route';
+import CloseFullscreenIcon from '@mui/icons-material/CloseFullscreen';
 
 
 // TODO: add open hours column
@@ -73,7 +74,7 @@ const stickyLeftOffsets = (() => {
 const tableMinWidth = columns.reduce((sum, column) => sum + (column.minWidth ?? 0), 0);
 
 export default function StickyHeadTable() {
-  const { deleteFromHistory:destDelete, setDestination, rows} = useMapFeatures();
+  const { deleteFromHistory:destDelete, setDestination, setDestHistory, rows, setShowDataTable} = useMapFeatures();
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
@@ -117,7 +118,24 @@ export default function StickyHeadTable() {
                     ...(column.sticky ? { '--sticky-left': `${stickyLeftOffsets[column.id]}px` } : {}),
                   }}
                 >
-                  {column.label}
+                  {column.id === 'name' ? (
+                    <Box className="clearAll-box">
+                      {column.label}
+                      <IconButton className='clearAll-btn' size="small" aria-label="clear all" onClick={() => setDestHistory([])}>
+                        <Box component="span" className="clearAll">Clear All</Box>
+                      </IconButton>
+                      <IconButton 
+                      size="small" 
+                      aria-label="menu" 
+                      onClick={() => {
+                        setShowDataTable(prev => !prev)
+                      }}
+                      className='minimize-btn'
+                      >
+                        <CloseFullscreenIcon/>
+                      </IconButton>
+                    </Box>
+                  ) : column.label}
                 </TableCell>
               ))}
             </TableRow>

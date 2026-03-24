@@ -112,15 +112,21 @@
   margin: 10px;
 }
 
+/* MapWithBox.css */
 .table-overlay {
   position: absolute;
-  bottom: 50px;
+  bottom: 50px; /* Anchors the box to the bottom so it grows UP */
   left: 50%;
   transform: translateX(-50%);
   z-index: 10;
   width: 60%;
-  height: 40%;
+  
+  /* --- Changes Start Here --- */
+  height: auto;       /* Allow the container to wrap the content */
+  max-height: 31dvh;  /* TODO: SETS THE DEST TABLE MAX HEIGHT */
+  /* --------------------------- */
+
   border-radius: 12px;
-  overflow: hidden;
+  overflow: hidden; 
   display: flex;
 }

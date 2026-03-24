@@ -77,16 +77,24 @@ export function useDestinations(home, destinations) {
           return;
         }
 
-        const currentHomeId = home.placeId;
+        // FILTER: Remove any destination that matches the current home/origin ID
+        const filteredDests = destinations.filter(d => d.placeId !== home.placeId);
 
+        // If after filtering there are no destinations left, clear the table
+        if (filteredDests.length === 0) {
+          if (isMounted) setRows([]);
+          return;
+        }
+
+        const currentHomeId = home.placeId;
         // 1. Identify what data is currently missing from our caches
         
-        // places cache 
+        // places cache i.e. ratings and price
         const missingPlaces = destinations.filter(
           d => !cache.current.places[d.placeId]
         );
         
-        // routes cache
+        // routes cache i.e distance and time 
         const missingRoutes = destinations.filter(
           d => !cache.current.routes[`${currentHomeId}_${d.placeId}`]
         );

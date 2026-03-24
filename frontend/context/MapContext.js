@@ -86,7 +86,7 @@ export function MapFeatureProvider({ children }) {
   const value = useMemo(() => ({
     home, handleHomeSelect, handleHomeClear,
     destination, setDestination, addDestination, clearRoute,
-    destHistory, deleteFromHistory,
+    destHistory, deleteFromHistory, setDestHistory,
     routeBounds, setRouteBounds,
     mapCenter, setMapCenter,
     isStreetViewVisible, setIsStreetViewVisible,

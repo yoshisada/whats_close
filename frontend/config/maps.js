@@ -11,6 +11,13 @@ export const MAP_CONFIG = {
   defaultCenter: { lat: 37.7749, lng: -122.4194 },
   defaultZoom: 14,
   libraries: ["places"],
+  // when calculating how to show route
+  routePadding: {
+    top: 140,    // Height of NavPill + buffer
+    bottom: 40,  // Buffer for the bottom of the map
+    left: 40,
+    right: 40
+  }
 };
 
 // clients for api call fetches
