@@ -1,0 +1,153 @@
+.location-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  padding: 24px;
+  max-width: 420px;
+  width: 100%;
+  color: #374151;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.location-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.card-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #43484f;
+  margin: 0;
+}
+
+.weather-icon {
+  width: 32px;
+  height: 32px;
+}
+
+.weather-sunny  { color: #eab308; }
+.weather-cloudy { color: #6b7280; }
+.weather-rainy  { color: #3b82f6; }
+.weather-snowy  { color: #93c5fd; }
+.weather-drizzle{ color: #60a5fa; }
+
+.card-meta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.rating {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 500;
+}
+
+.rating span{
+  color: #43484f;
+}
+
+.star-icon {
+  width: 20px;
+  height: 20px;
+  color: #facc15;
+  fill: #facc15;
+}
+
+.price {
+  display: flex;
+  align-items: center;
+}
+
+.dollar {
+  width: 16px;
+  height: 16px;
+}
+
+.dollar.active   { color: #076f2d; }
+.dollar.inactive { color: #aaadb0; }
+
+.transport-section {
+  margin-bottom: 24px;
+}
+
+.transport-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #4b5563;
+  margin: 0 0 8px 0;
+}
+
+.transport-options {
+  display: flex;
+  gap: 12px;
+}
+
+.transport-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f9fafb;
+  border-radius: 8px;
+  padding: 8px 12px;
+}
+
+.transport-option span {
+  color: #43484f;
+}
+
+
+.transport-icon {
+  width: 20px;
+  height: 20px;
+  color: #374151;
+}
+
+.card-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.btn-route,
+.btn-delete {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-route {
+  flex: 1;
+  background: #2563eb;
+  color: white;
+}
+
+.btn-route:hover { background: #1d4ed8; }
+
+.btn-delete {
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+.btn-delete:hover { background: #fee2e2; }
+
+.btn-icon {
+  width: 20px;
+  height: 20px;
+}

@@ -90,12 +90,12 @@ export function useDestinations(home, destinations) {
         // 1. Identify what data is currently missing from our caches
         
         // places cache i.e. ratings and price
-        const missingPlaces = destinations.filter(
+        const missingPlaces = filteredDests.filter(
           d => !cache.current.places[d.placeId]
         );
         
         // routes cache i.e distance and time 
-        const missingRoutes = destinations.filter(
+        const missingRoutes = filteredDests.filter(
           d => !cache.current.routes[`${currentHomeId}_${d.placeId}`]
         );
 
@@ -107,7 +107,7 @@ export function useDestinations(home, destinations) {
 
         // 3. Assemble the rows entirely from the local cache
         if (isMounted) {
-          const newRows = destinations.map(dest => {
+          const newRows = filteredDests.map(dest => {
             // read the cahce here 
             const placeData = cache.current.places[dest.placeId];
             const routeData = cache.current.routes[`${currentHomeId}_${dest.placeId}`];

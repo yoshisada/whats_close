@@ -1,0 +1,76 @@
+.menu-btn {
+  display: none;
+}
+
+@media (min-width: 600px) {
+  .menu-btn {
+    display: block;
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    z-index: 1000;
+  }
+}
+
+.drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.card-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+}
+
+.mobile-drawer-inner {
+  height: 100%;
+  overflow: auto;
+  background: white;
+}
+
+.mobile-card-list {
+  padding-bottom: 32px;
+}
+
+.btn-clear-all {
+  margin-left: auto;
+  background: #e5e7eb;
+  border: none;
+  color: #374151;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 6px 14px;
+  border-radius: 400px;
+  transition: background 0.2s;
+}
+
+.btn-clear-all:hover {
+  background: #f3f4f6;
+}
+
+.puller-tab {
+  position: absolute;
+  top: -20px;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+  visibility: visible;
+  right: 0;
+  left: 0;
+  background: white;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.puller {
+  width: 30px;
+  height: 6px;
+  background: #d1d5db;
+  border-radius: 3px;
+}
