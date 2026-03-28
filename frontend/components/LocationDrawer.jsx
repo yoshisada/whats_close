@@ -1,46 +1,50 @@
 'use client'
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Drawer from '@mui/material/Drawer';
 import SwipeableDrawer from '@mui/material/SwipeableDrawer';
 import IconButton from '@mui/material/IconButton';
 import MenuIcon from '@mui/icons-material/Menu';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import LocationCard from "./LocationCard";
+import { useMapFeatures } from "../context/MapContext";
 import './LocationDrawer.css';
+import "./MapWithBox.css";
+
 
 const drawerWidth = 460;
 const drawerBleeding = 20;
 
 export default function LocationDrawer() {
   const [open, setOpen] = useState(false);
+  const menuButtonRef = useRef(null);
+  const { setDestHistory, rows} = useMapFeatures();
+
+  const handleClose = () => {
+    const activeElement = document.activeElement;
+    if (activeElement instanceof HTMLElement) {
+      activeElement.blur();
+    }
+
+    menuButtonRef.current?.focus();
+    setOpen(false);
+  };
 
   const cards = (
     <div className="card-list">
-      {[...Array(10)].map((_, index) => (
-        <LocationCard
-          key={index}
-          title="Central Park"
-          rating={4.8}
-          priceLevel={2}
-          weather="sunny"
-          transportOptions={[
-            { type: 'car', time: '15 min' },
-            { type: 'bike', time: '25 min' },
-            { type: 'train', time: '20 min' },
-          ]}
-          onDelete={() => console.log('delete')}
-          onSetRoute={() => console.log('set route')}
-        />
-      ))}
+      {rows.map((row) => {
+        return(
+          <LocationCard key={row.desPlaceId} place={row}/>
+        );
+      })}
     </div>
   );
 
   return (
     <div>
       {/* Menu button — hidden on mobile */}
-      <div className="menu-btn">
-        <IconButton onClick={() => setOpen(true)}>
+      <div className="nav-buttons show-data-table-button menu-btn">
+        <IconButton ref={menuButtonRef} onClick={() => setOpen(true)}>
           <MenuIcon />
         </IconButton>
       </div>
@@ -48,10 +52,10 @@ export default function LocationDrawer() {
       {/* Desktop — right drawer */}
       <Drawer
         className="desktop-drawer"
+        variant="persistent"
         anchor="right"
         open={open}
-        onClose={() => setOpen(false)}
-        hideBackdrop
+        onClose={handleClose}
         sx={{
           display: { xs: 'none', sm: 'block' },
           '& .MuiDrawer-paper': {
@@ -60,10 +64,10 @@ export default function LocationDrawer() {
         }}
       >
         <div className="drawer-header">
-          <IconButton onClick={() => setOpen(false)}>
+          <IconButton onClick={handleClose}>
             <ChevronRightIcon />
           </IconButton>
-          <button className="btn-clear-all" onClick={() => console.log('clear all')}>
+          <button className="btn-clear-all" onClick={() => setDestHistory([])}>
             Clear All
           </button>
         </div>
@@ -74,7 +78,7 @@ export default function LocationDrawer() {
       <SwipeableDrawer
         anchor="bottom"
         open={open}
-        onClose={() => setOpen(false)}
+        onClose={handleClose}
         onOpen={() => setOpen(true)}
         swipeAreaWidth={drawerBleeding}
         disableSwipeToOpen={false}
@@ -88,17 +92,13 @@ export default function LocationDrawer() {
             borderTopRightRadius: '12px',
           },
         }}
-        // ModalProps={{
-        //   keepMounted: true,
-        //   disableScrollLock: true,
-        // }}
       >
         <div className="puller-tab">
           <div className="puller" />
         </div>
         <div className="mobile-drawer-inner">
           <div className="drawer-header">
-            <button className="btn-clear-all" onClick={() => console.log('clear all')}>
+            <button className="btn-clear-all" onClick={() => setDestHistory([])}>
               Clear All
             </button>
           </div>

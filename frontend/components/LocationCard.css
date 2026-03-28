@@ -7,11 +7,7 @@
   width: 100%;
   color: #374151;
   transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.location-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  font-family: 'Poppins', sans-serif;
 }
 
 .card-header {
@@ -84,7 +80,7 @@
 .transport-label {
   font-size: 0.875rem;
   font-weight: 500;
-  color: #4b5563;
+  color: #3a3e43;
   margin: 0 0 8px 0;
 }
 
@@ -97,7 +93,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  background: #f9fafb;
+  background: #eff2f3;
   border-radius: 8px;
   padding: 8px 12px;
 }
@@ -110,7 +106,7 @@
 .transport-icon {
   width: 20px;
   height: 20px;
-  color: #374151;
+  color: #2d3035;
 }
 
 .card-actions {

@@ -20,6 +20,7 @@ import StreetViewWatcher from "./StreetViewWatcher";
 import MapCenterControl from "./MapCenterControl";
 import NavPill from "./NavPill";
 import ShowDataTableButton from "./ShowDataTableButton";
+import LocationDrawer from "./LocationDrawer";
 
 
 const routeOptions = {
@@ -28,7 +29,7 @@ const routeOptions = {
 }
 
 
-//TODO: there is a big problem the component rerenders everytime i move the map
+// TODO: there is a big problem the component rerenders everytime i move the map
 // so its leading to a crash becasue its running out o memory consult the
 // docs and see how to properly set center
 export default function MapWithBox() {
@@ -77,9 +78,7 @@ export default function MapWithBox() {
           mapTypeControl={false}
           fullscreenControl
         >
-          {!showDataTable && destHistory.length > 0 &&
-            <ShowDataTableButton />
-          } 
+
           <MapCenterControl />
           <StreetViewWatcher/>
 
@@ -97,10 +96,8 @@ export default function MapWithBox() {
             <AdvancedMarker position={home} />
           )}
         </GoogleMap>
-        {showDataTable && destHistory.length > 0 &&
-          <div className="table-overlay">
-            <DestInfoTable/>
-          </div>
+        {destHistory.length > 0 &&
+          <LocationDrawer/>
         }
       </div>
     </APIProvider>

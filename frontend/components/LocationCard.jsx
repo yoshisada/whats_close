@@ -1,16 +1,16 @@
 'use client'
 
 import { Trash2, Navigation, Star, DollarSign, Sun, Cloud, CloudRain, CloudSnow, CloudDrizzle } from 'lucide-react';
+import { formatDurationFromSeconds } from '../utils/time';
+import { getImperialDist } from '../utils/distance';
 import DirectionsWalkIcon from '@mui/icons-material/DirectionsWalk';
 import DriveEtaIcon from '@mui/icons-material/DriveEta';
 import DirectionsTransitFilledIcon from '@mui/icons-material/DirectionsTransitFilled';
+import './LocationCard.css'
+import { useMapFeatures } from "../context/MapContext";
 
-const transportIcons = {
-  car: DriveEtaIcon,
-  bike: DirectionsWalkIcon,
-  train: DirectionsTransitFilledIcon,
-};
 
+//TODO: add weather
 const weatherIcons = {
   sunny: Sun,
   cloudy: Cloud,
@@ -27,72 +27,84 @@ const weatherColors = {
   drizzle: 'weather-drizzle',
 };
 
-export default function LocationCard({
-  title,
-  rating,
-  priceLevel,
-  transportOptions,
-  weather = 'sunny',
-  onDelete,
-  onSetRoute,
-}) {
-  const WeatherIcon = weatherIcons[weather];
+/**
+ * @typedef {Object} place
+ * @property {string} name - "Chipotle Mexican Grill, Munras Avenue, Monterey, CA, USA"
+ * @property {string} desPlaceId - "ChIJl28xQCTkjYAR48CoQtJ6pb4"
+ * @property {object} destObj
+ * @property {string} destObj.field - "dest"
+ * @property {string} destObj.label - "Chipotle Mexican Grill, Munras Avenue, Monterey, CA, USA"
+ * @property {string} destObj.placeId - "ChIJl28xQCTkjYAR48CoQtJ6pb4"
+ * @property {number} destObj.lat - 36.5969267
+ * @property {number} destObj.lng - -121.8944817
+ * @property {number} distance - 30353 (meters)
+ * @property {number} driveTime - 1595 (seconds)
+ * @property {number} transitTime - 3471 (seconds)
+ * @property {number} walkTime - 23688 (seconds)
+ * @property {number} ratings - 3.8 or 'N/A'
+ * @property {string} cost - "$" or 'N/A'
+ */
 
-  const handleDelete = () => {
-    console.log('Delete clicked');
-    onDelete?.();
-    alert('Location deleted!');
-  };
-
-  const handleSetRoute = () => {
-    console.log('Set route clicked');
-    onSetRoute?.();
-    alert('Route set!');
-  };
+/**
+ * @param {{ place: place }} props
+ */
+export default function LocationCard({place}) {
+  const { deleteFromHistory, setDestination } = useMapFeatures();
 
   return (
     <div className="location-card">
       <div className="card-header">
-        <h2 className="card-title">{title}</h2>
+        <h2 className="card-title">{place.name}</h2>
         {/* <WeatherIcon className={`weather-icon ${weatherColors[weather]}`} /> */}
       </div>
 
       <div className="card-meta">
-        <div className="rating">
-          <Star className="star-icon" />
-          <span>{rating.toFixed(1)}</span>
-        </div>
-        <div className="price">
-          {[...Array(priceLevel)].map((_, i) => (
-            <DollarSign key={i} className="dollar active" />
-          ))}
-          {[...Array(4 - priceLevel)].map((_, i) => (
-            <DollarSign key={i + priceLevel} className="dollar inactive" />
-          ))}
+        {place.ratings !== 'N/A' && (
+          <div className="rating">
+            <Star className="star-icon" />
+            <span>{place.ratings.toFixed(1)}</span>
+          </div>
+        )}
+        {place.cost !== 'N/A' && (
+          <div className="price">
+            {[...Array(place.cost.length)].map((_, i) => (
+              <DollarSign key={i} className="dollar active" />
+            ))}
+            {[...Array(4 - priceLevel)].map((_, i) => (
+              <DollarSign key={i + place.cost.length} className="dollar inactive" />
+            ))}
+          </div>
+        )}
+        {/*TODO: think about where distance should go will leave it here for now maybe make it a button to see km like the other */}
+        <div>
+          {getImperialDist(place.distance)}
         </div>
       </div>
 
       <div className="transport-section">
-        <h3 className="transport-label">Transportation</h3>
         <div className="transport-options">
-          {transportOptions.map((option, index) => {
-            const Icon = transportIcons[option.type];
-            return (
-              <div key={index} className="transport-option">
-                <Icon className="transport-icon" />
-                <span>{option.time}</span>
-              </div>
-            );
-          })}
+          <div className="transport-option">
+            <DriveEtaIcon className="transport-icon"/>
+            <span>{formatDurationFromSeconds(place.driveTime)}</span>
+          </div>
+          <div className="transport-option">
+            <DirectionsWalkIcon className="transport-icon"/>
+            <span>{formatDurationFromSeconds(place.walkTime)}</span>
+          </div>
+          <div className="transport-option">
+            <DirectionsTransitFilledIcon className="transport-icon"/>
+            <span>{formatDurationFromSeconds(place.transitTime)}</span>
+          </div>
         </div>
       </div>
 
+      {/* TODO: set up button handlers */}
       <div className="card-actions">
-        <button className="btn-route" onClick={handleSetRoute}>
+        <button className="btn-route" onClick={() => {setDestination(place.destObj)}}>
           <Navigation className="btn-icon" />
           Set Route
         </button>
-        <button className="btn-delete" onClick={handleDelete}>
+        <button className="btn-delete" onClick={() => {deleteFromHistory(place.desPlaceId)}}>
           <Trash2 className="btn-icon" />
           Delete
         </button>
