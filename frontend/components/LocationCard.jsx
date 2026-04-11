@@ -50,6 +50,7 @@ const weatherColors = {
  */
 export default function LocationCard({place}) {
   const { deleteFromHistory, setDestination } = useMapFeatures();
+  console.log(place)
 
   return (
     <div className="location-card">
@@ -70,7 +71,7 @@ export default function LocationCard({place}) {
             {[...Array(place.cost.length)].map((_, i) => (
               <DollarSign key={i} className="dollar active" />
             ))}
-            {[...Array(4 - priceLevel)].map((_, i) => (
+            {[...Array(4 - place.cost.length)].map((_, i) => (
               <DollarSign key={i + place.cost.length} className="dollar inactive" />
             ))}
           </div>
@@ -103,6 +104,9 @@ export default function LocationCard({place}) {
         <button className="btn-route" onClick={() => {setDestination(place.destObj)}}>
           <Navigation className="btn-icon" />
           Set Route
+        </button>
+        <button className="btn-show-route" onClick={() => {console.log("show route")}}>
+          Show Route
         </button>
         <button className="btn-delete" onClick={() => {deleteFromHistory(place.desPlaceId)}}>
           <Trash2 className="btn-icon" />

@@ -75,6 +75,7 @@ export default function LocationDrawer() {
       </Drawer>
 
       {/* Mobile — bottom swipeable drawer */}
+      {/* TODO: first have people tap to fully extend then they can slide down to close it */}
       <SwipeableDrawer
         anchor="bottom"
         open={open}

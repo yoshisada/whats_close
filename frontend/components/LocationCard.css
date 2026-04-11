@@ -115,7 +115,8 @@
 }
 
 .btn-route,
-.btn-delete {
+.btn-delete,
+.btn-show-route {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -135,6 +136,17 @@
 }
 
 .btn-route:hover { background: #1d4ed8; }
+
+.btn-show-route {
+  background: rgb(252, 245, 228);
+  color: orange
+
+}
+
+.btn-show-route:hover {
+  background: rgb(253, 238, 204);
+
+}
 
 .btn-delete {
   background: #fef2f2;
