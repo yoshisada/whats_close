@@ -1,10 +1,19 @@
 "use client";
 
 // look into reducesrs https://react.dev/learn/scaling-up-with-reducer-and-context
-import React, { createContext, useContext, useState, useCallback, useMemo } from 'react';
+import React, { createContext, useContext, useState, useCallback, useMemo, useRef } from 'react';
 import { MAP_CONFIG } from '../config/maps';
 import { useDestinations } from '../hooks/useDestinations';
 
+/* Shape of 'home' / 'destination' objects:
+  {
+    field:   string, // 'origin' | 'destination'
+    label:   string, // name of place, i.e. full address
+    placeId: string, // 'ChIJ4-Rmg...'
+    lat:     number, // 36.618...
+    lng:     number  // -121.901...
+  }
+*/
 
 const MapContext = createContext(null);
 
@@ -14,12 +23,15 @@ export function MapFeatureProvider({ children }) {
   const [destination, setDestination] = useState(null);
   const [destHistory, setDestHistory] = useState([]);
   const [routeBounds, setRouteBounds] = useState(null);
+  const routesCache = useRef ({});
+  const [activeRoutes, setActiveRoutes] = useState([]);
 
   // --- UI/Map Control State ---
   const [mapCenter, setMapCenter] = useState(MAP_CONFIG.defaultCenter);
   const [isStreetViewVisible, setIsStreetViewVisible] = useState(false);
   const [mapType, setMapType] = useState(true); // true = roadmap, false = hybrid
   const [showDataTable, setShowDataTable] = useState(true)
+
 
   // --- Logic Handlers (Memoized) ---
 
@@ -60,6 +72,21 @@ export function MapFeatureProvider({ children }) {
     setMapType(prev => !prev);
   }, []);
 
+  const toggleActiveRoute = useCallback((dest) => {
+    setActiveRoutes((prev) => {
+      // 1. Check if it's already there
+      const isAlreadyActive = prev.some(route => route.placeId === dest.placeId);
+  
+      if (isAlreadyActive) {
+        // 2. It's a duplicate? Remove it (Toggle OFF)
+        return prev.filter(route => route.placeId !== dest.placeId);
+      } 
+      
+      // 3. Not there? Add it (Toggle ON)
+      return [...prev, dest];
+    });
+  }, []);
+
   // rows holds the data that fills the datatable
   // I need it to persist even when the table is unmounted
   // so it needs to exist here
@@ -88,6 +115,8 @@ export function MapFeatureProvider({ children }) {
     destination, setDestination, addDestination, clearRoute,
     destHistory, deleteFromHistory, setDestHistory,
     routeBounds, setRouteBounds,
+    routesCache,
+    activeRoutes, toggleActiveRoute,
     mapCenter, setMapCenter,
     isStreetViewVisible, setIsStreetViewVisible,
     mapType, toggleMapType,
@@ -98,6 +127,8 @@ export function MapFeatureProvider({ children }) {
     destination, addDestination, clearRoute,
     destHistory, deleteFromHistory,
     routeBounds,
+    routesCache, 
+    activeRoutes,
     mapCenter,
     isStreetViewVisible,
     mapType,

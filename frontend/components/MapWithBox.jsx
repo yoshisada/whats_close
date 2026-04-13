@@ -21,6 +21,7 @@ import MapCenterControl from "./MapCenterControl";
 import NavPill from "./NavPill";
 import ShowDataTableButton from "./ShowDataTableButton";
 import LocationDrawer from "./LocationDrawer";
+import MultiRoutes from "./MultiRoutes";
 
 
 const routeOptions = {
@@ -87,6 +88,8 @@ export default function MapWithBox() {
               routeOptions={routeOptions}
             />
           }
+
+          {home && <MultiRoutes />}
 
           <RecenterRouteButton/>
           <MapTypeButton/>

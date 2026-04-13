@@ -49,7 +49,7 @@ const weatherColors = {
  * @param {{ place: place }} props
  */
 export default function LocationCard({place}) {
-  const { deleteFromHistory, setDestination } = useMapFeatures();
+  const { deleteFromHistory, setDestination, toggleActiveRoute } = useMapFeatures();
   console.log(place)
 
   return (
@@ -105,7 +105,7 @@ export default function LocationCard({place}) {
           <Navigation className="btn-icon" />
           Set Route
         </button>
-        <button className="btn-show-route" onClick={() => {console.log("show route")}}>
+        <button className="btn-show-route" onClick={() => {toggleActiveRoute(place.destObj)}}>
           Show Route
         </button>
         <button className="btn-delete" onClick={() => {deleteFromHistory(place.desPlaceId)}}>

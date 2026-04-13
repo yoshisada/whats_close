@@ -29,7 +29,9 @@ async function fetchMissingRoutes(home, missingDests, cacheRef) {
     routesMatrixApi.computeMatrix(home, missingDests, "WALK"),
     routesMatrixApi.computeMatrix(home, missingDests, "TRANSIT")
   ]);
-
+  
+  // this has to happen because the reurn of the matrix is in random order so we have 
+  // recreate it as a object we can view by key
   const driveLookUp = createDataLookup(driveRes);
   const walkLookUp = createDataLookup(walkRes);
   const transitLookUp = createDataLookup(transitRes);
@@ -77,7 +79,7 @@ export function useDestinations(home, destinations) {
           return;
         }
 
-        // FILTER: Remove any destination that matches the current home/origin ID
+        // FILTER: Remove any destination that matches the current home/origin ID i.e. Salinas to Salinas filter that out
         const filteredDests = destinations.filter(d => d.placeId !== home.placeId);
 
         // If after filtering there are no destinations left, clear the table
